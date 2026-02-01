@@ -31,15 +31,16 @@ export async function GET(request: Request) {
   try {
     const supabase = createServerClient();
 
-    // Get all active interviews (in_progress status)
+    // Get all active interviews (pending or in_progress status)
     const { data: activeInterviews, error: fetchError } = await supabase
       .from('interviews')
       .select(`
         id,
+        status,
         turn_count,
         current_judge
       `)
-      .eq('status', 'in_progress');
+      .in('status', ['pending', 'in_progress']);
 
     if (fetchError) {
       console.error('Error fetching active interviews:', fetchError);
@@ -72,9 +73,10 @@ export async function GET(request: Request) {
         .eq('interview_id', interview.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle(); // Use maybeSingle() since pending interviews have no messages
 
       // Skip if there's a pending question (applicant hasn't responded yet)
+      // But allow if no messages exist (pending interview needs first question)
       if (lastMessage?.role === 'judge') {
         results.push({
           interviewId: interview.id,
