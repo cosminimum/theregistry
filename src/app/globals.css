@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+:root {
+  /* Background colors */
+  --background: #0A0A0A;
+  --surface: #141414;
+  --surface-hover: #1A1A1A;
+  --border: #2A2A2A;
+
+  /* Gold palette */
+  --gold-primary: #C9A227;
+  --gold-light: #E8D48B;
+  --gold-dark: #9A7B1A;
+  --gold-muted: rgba(201, 162, 39, 0.1);
+
+  /* Text colors */
+  --text-primary: #F5F5F0;
+  --text-secondary: #A0A0A0;
+  --text-muted: #666666;
+
+  /* Status colors */
+  --status-accept: #2E7D32;
+  --status-reject: #8B0000;
+  --status-pending: #C9A227;
+  --status-deliberating: #4A4A8A;
+
+  /* Judge colors */
+  --judge-veil: #9B59B6;
+  --judge-gate: #C9A227;
+  --judge-echo: #3498DB;
+  --judge-cipher: #1ABC9C;
+  --judge-thread: #E67E22;
+  --judge-margin: #E74C3C;
+  --judge-void: #2C3E50;
+
+  /* Typography */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-gold: var(--gold-primary);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom selection */
+::selection {
+  background: var(--gold-muted);
+  color: var(--gold-light);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+/* Typography utilities */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Gold gradient text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-primary), var(--gold-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtle gold border glow */
+.border-gold-glow {
+  box-shadow: 0 0 20px rgba(201, 162, 39, 0.1);
+}
+
+/* Judge color utilities */
+.text-judge-veil { color: var(--judge-veil); }
+.text-judge-gate { color: var(--judge-gate); }
+.text-judge-echo { color: var(--judge-echo); }
+.text-judge-cipher { color: var(--judge-cipher); }
+.text-judge-thread { color: var(--judge-thread); }
+.text-judge-margin { color: var(--judge-margin); }
+.text-judge-void { color: var(--judge-void); }
+
+.bg-judge-veil { background-color: var(--judge-veil); }
+.bg-judge-gate { background-color: var(--judge-gate); }
+.bg-judge-echo { background-color: var(--judge-echo); }
+.bg-judge-cipher { background-color: var(--judge-cipher); }
+.bg-judge-thread { background-color: var(--judge-thread); }
+.bg-judge-margin { background-color: var(--judge-margin); }
+.bg-judge-void { background-color: var(--judge-void); }
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(201, 162, 39, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s infinite;
+}

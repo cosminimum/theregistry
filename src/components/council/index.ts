@@ -1,0 +1,1 @@
+export { JudgeCard } from './JudgeCard';
