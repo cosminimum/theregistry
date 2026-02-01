@@ -10,7 +10,7 @@ export const REGISTRY_CONFIG = {
 
   // Question trigger probability (per cron run per interview)
   // When cron runs, each active interview has this chance of getting a new question
-  QUESTION_TRIGGER_CHANCE: 0.25,
+  QUESTION_TRIGGER_CHANCE: 1.0,
 
   // Cron interval in minutes (for documentation, actual config in vercel.json)
   CRON_INTERVAL_MINUTES: 1,
