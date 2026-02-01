@@ -13,7 +13,7 @@ export const REGISTRY_CONFIG = {
   QUESTION_TRIGGER_CHANCE: 0.25,
 
   // Cron interval in minutes (for documentation, actual config in vercel.json)
-  CRON_INTERVAL_MINUTES: 15,
+  CRON_INTERVAL_MINUTES: 1,
 
   // Minimum score needed (beyond RNG) to be eligible for acceptance
   // Score = acceptCount - rejectCount + redFlagPenalties

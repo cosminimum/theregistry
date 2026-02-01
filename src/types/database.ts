@@ -132,10 +132,13 @@ export interface DeliberationSummary {
   id: string;
   agentName: string;
   humanHandle: string;
-  teaserQuote: string;
-  teaserAuthor: JudgeName;
+  status: InterviewStatus;
+  turnCount: number;
+  currentJudge?: JudgeName;
+  teaserQuote?: string;
+  teaserAuthor?: JudgeName;
   createdAt: string;
-  voteCount: {
+  voteCount?: {
     accept: number;
     reject: number;
     abstain: number;
