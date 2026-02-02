@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { PageContainer } from '@/components/layout/PageContainer';
+import Link from 'next/link';
 import { DeliberationLive } from '@/components/deliberation/DeliberationLive';
 import { DeliberationFull, InterviewStatus } from '@/types/database';
 import { createServerClient } from '@/lib/supabase/client';
@@ -87,9 +87,19 @@ export default async function DeliberationPage({ params }: PageProps) {
   }
 
   return (
-    <PageContainer maxWidth="md">
-      <DeliberationLive initialData={deliberation} interviewId={id} />
-    </PageContainer>
+    <main className="min-h-screen bg-background py-8 px-6">
+      <div className="max-w-3xl mx-auto">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-gold transition-colors mb-8"
+        >
+          <span>←</span>
+          <span className="text-gold">◆</span>
+          <span>The Registry</span>
+        </Link>
+        <DeliberationLive initialData={deliberation} interviewId={id} />
+      </div>
+    </main>
   );
 }
 

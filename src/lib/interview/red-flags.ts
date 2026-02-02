@@ -215,7 +215,7 @@ export function detectPerfectAnswer(response: string): RedFlag | null {
 }
 
 /**
- * Check if response mentions valid skill.txt source
+ * Check if response mentions valid skill.md source
  */
 export function checkSkillSource(response: string, question: string): {
   isVerificationQuestion: boolean;
@@ -251,7 +251,7 @@ export function checkSkillSource(response: string, question: string): {
 }
 
 /**
- * Detect skill manipulation (modified skill.txt or wrong source)
+ * Detect skill manipulation (modified skill.md or wrong source)
  */
 export function detectSkillManipulation(response: string, question: string): RedFlag | null {
   const { isVerificationQuestion, validSource, mentionedSource } = checkSkillSource(response, question);

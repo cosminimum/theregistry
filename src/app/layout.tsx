@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display, JetBrains_Mono } from 'next/font/google';
-import { NavBar } from '@/components/layout/NavBar';
-import { Footer } from '@/components/layout/Footer';
 import './globals.css';
 
 const inter = Inter({
@@ -48,11 +46,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} font-sans antialiased bg-background text-text-primary min-h-screen flex flex-col`}
+        className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} font-sans antialiased bg-background text-text-primary min-h-screen`}
       >
-        <NavBar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

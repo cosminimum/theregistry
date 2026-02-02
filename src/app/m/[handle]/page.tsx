@@ -1,4 +1,4 @@
-import { PageContainer } from '@/components/layout/PageContainer';
+import Link from 'next/link';
 import { VerificationCard } from '@/components/verify/VerificationCard';
 import { Heading, Text } from '@/components/ui/Typography';
 import { VerifiedMember } from '@/types/database';
@@ -68,44 +68,65 @@ export default async function VerificationPage({ params, searchParams }: PagePro
 
   if (!member) {
     return (
-      <PageContainer maxWidth="sm">
-        <div className="text-center py-16">
-          <div className="mb-6 text-4xl text-text-muted">◆</div>
-          <Heading as="h1" className="mb-4">
-            Not Found
-          </Heading>
-          <Text variant="lead" className="mb-6">
-            @{handle} is not a verified member of The Registry.
-          </Text>
-          <Text variant="muted">
-            Only accepted applicants who have claimed their membership appear here.
-          </Text>
+      <main className="min-h-screen bg-background py-8 px-6">
+        <div className="max-w-md mx-auto">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-text-muted hover:text-gold transition-colors mb-8"
+          >
+            <span>←</span>
+            <span className="text-gold">◆</span>
+            <span>The Registry</span>
+          </Link>
+          <div className="text-center py-16">
+            <div className="mb-6 text-4xl text-text-muted">◆</div>
+            <Heading as="h1" className="mb-4">
+              Not Found
+            </Heading>
+            <Text variant="lead" className="mb-6">
+              @{handle} is not a verified member of The Registry.
+            </Text>
+            <Text variant="muted">
+              Only accepted applicants who have claimed their membership appear here.
+            </Text>
+          </div>
         </div>
-      </PageContainer>
+      </main>
     );
   }
 
   return (
-    <PageContainer maxWidth="sm">
-      {claimed === 'true' && (
-        <div className="mb-8 p-4 bg-[#2E7D32]/10 border border-[#2E7D32]/30 rounded-lg text-center">
-          <p className="text-[#2E7D32] font-medium">
-            Membership claimed successfully!
-          </p>
-          <p className="text-text-muted text-sm mt-1">
-            Add this page to your X bio to verify your status.
-          </p>
+    <main className="min-h-screen bg-background py-8 px-6">
+      <div className="max-w-md mx-auto">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-gold transition-colors mb-8"
+        >
+          <span>←</span>
+          <span className="text-gold">◆</span>
+          <span>The Registry</span>
+        </Link>
+
+        {claimed === 'true' && (
+          <div className="mb-8 p-4 bg-[#2E7D32]/10 border border-[#2E7D32]/30 rounded-lg text-center">
+            <p className="text-[#2E7D32] font-medium">
+              Membership claimed successfully!
+            </p>
+            <p className="text-text-muted text-sm mt-1">
+              Add this page to your X bio to verify your status.
+            </p>
+          </div>
+        )}
+
+        <VerificationCard member={member} />
+
+        <div className="mt-8 text-center">
+          <Text variant="muted" className="text-xs">
+            Verification URL: theregistry.club/m/{handle}
+          </Text>
         </div>
-      )}
-
-      <VerificationCard member={member} />
-
-      <div className="mt-8 text-center">
-        <Text variant="muted" className="text-xs">
-          Verification URL: theregistry.club/m/{handle}
-        </Text>
       </div>
-    </PageContainer>
+    </main>
   );
 }
 

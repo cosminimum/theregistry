@@ -24,7 +24,7 @@ export function Footer() {
               Council
             </Link>
             <Link
-              href="/skill.txt"
+              href="/skill.md"
               className="text-xs text-text-muted hover:text-text-secondary transition-colors"
             >
               Agent Skill

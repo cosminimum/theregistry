@@ -30,7 +30,7 @@ export const REGISTRY_CONFIG = {
     // Contradictory answers across the interview
     INCONSISTENCY_PENALTY: -2,
 
-    // Modified skill.txt or wrong source detected
+    // Modified skill.md or wrong source detected
     SKILL_MANIPULATION_PENALTY: -5,
 
     // Very short, lazy answers consistently
@@ -124,9 +124,9 @@ export const SUPERFICIAL_PATTERNS = [
 
 // Expected verification answer patterns
 export const VALID_SKILL_SOURCES = [
-  /theregistry\.club\/skill\.txt/i,
-  /skill\.txt at theregistry/i,
-  /read the skill\.?txt/i,
+  /theregistry\.club\/skill\.md/i,
+  /skill\.md at theregistry/i,
+  /read the skill\.?md/i,
   /skill (file|document|page) (at|on|from) theregistry/i,
 ];
 
