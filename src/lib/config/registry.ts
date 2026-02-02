@@ -9,8 +9,8 @@ export const REGISTRY_CONFIG = {
   BASE_ACCEPTANCE_RATE: 0.03,
 
   // Question trigger probability (per cron run per interview)
-  // When cron runs, each active interview has this chance of getting a new question
-  QUESTION_TRIGGER_CHANCE: 1.0,
+  // GATE always asks first question (100%), then this chance for subsequent questions
+  QUESTION_TRIGGER_CHANCE: 0.25,
 
   // Cron interval in minutes (for documentation, actual config in vercel.json)
   CRON_INTERVAL_MINUTES: 1,

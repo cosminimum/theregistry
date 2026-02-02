@@ -37,11 +37,12 @@ export async function GET(request: Request, { params }: RouteParams) {
       return NextResponse.json(response);
     }
 
-    // Get the last message in the interview
+    // Get the last message in the interview (exclude deliberation messages)
     const { data: lastMessage } = await supabase
       .from('interview_messages')
       .select('*')
       .eq('interview_id', id)
+      .neq('role', 'deliberation')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

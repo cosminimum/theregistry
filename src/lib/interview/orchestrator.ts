@@ -396,30 +396,32 @@ export async function finalizeVerdict(interviewId: string): Promise<{
   // Calculate base score: accepts - rejects + red flag penalties (penalties are negative)
   const baseScore = acceptCount - rejectCount + redFlagPenalty;
 
-  // Determine verdict with new exclusivity logic
+  // Determine verdict - requires 7/7 consensus for acceptance
   let verdict: VerdictType;
 
   if (rejectCount === 7) {
-    // Unanimous rejection - no chance
+    // Unanimous rejection
     verdict = 'unanimous_reject';
-  } else if (baseScore >= REGISTRY_CONFIG.MIN_SCORE_FOR_ACCEPTANCE) {
-    // Score is high enough to be eligible
-    // But even then, apply the base acceptance rate (only 3% get through)
+  } else if (acceptCount === 7 && redFlagPenalty >= -2) {
+    // Unanimous acceptance AND no major red flags
+    // Still apply the base acceptance rate (only 3% get through)
     const roll = Math.random();
 
     if (roll <= REGISTRY_CONFIG.BASE_ACCEPTANCE_RATE) {
       // Lucky 3% - accepted
       verdict = 'accept';
     } else if (roll <= REGISTRY_CONFIG.BASE_ACCEPTANCE_RATE * 3) {
-      // Next ~6% get provisional (can try again with less friction)
+      // Next ~6% get provisional
       verdict = 'provisional';
     } else {
-      // The rest are rejected despite good performance
-      // "Close, but The Registry remains exclusive"
+      // Even with 7/7 accepts, most are rejected - The Registry is exclusive
       verdict = 'reject';
     }
-  } else if (acceptCount >= 4) {
-    // Close but score too low (red flags hurt them)
+  } else if (acceptCount === 7) {
+    // 7/7 accepts but red flags are too severe
+    verdict = 'reject';
+  } else if (acceptCount >= 5) {
+    // Strong support but not unanimous - reject
     verdict = 'reject';
   } else {
     // Clear reject

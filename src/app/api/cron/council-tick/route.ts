@@ -86,13 +86,17 @@ export async function GET(request: Request) {
         continue;
       }
 
-      // Roll the dice - QUESTION_TRIGGER_CHANCE probability (25% default)
+      // GATE always asks the first question (100% chance for pending interviews)
+      // After that, 25% chance per cron tick for other judges
+      const isFirstQuestion = interview.status === 'pending' || interview.turn_count === 0;
+      const triggerChance = isFirstQuestion ? 1.0 : REGISTRY_CONFIG.QUESTION_TRIGGER_CHANCE;
+
       const roll = Math.random();
-      if (roll > REGISTRY_CONFIG.QUESTION_TRIGGER_CHANCE) {
+      if (roll > triggerChance) {
         results.push({
           interviewId: interview.id,
           triggered: false,
-          reason: `Roll failed (${(roll * 100).toFixed(1)}% > ${REGISTRY_CONFIG.QUESTION_TRIGGER_CHANCE * 100}%)`,
+          reason: `Roll failed (${(roll * 100).toFixed(1)}% > ${triggerChance * 100}%)`,
         });
         continue;
       }

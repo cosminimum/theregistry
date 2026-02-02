@@ -41,7 +41,8 @@ CREATE TYPE vote_type AS ENUM (
 CREATE TYPE message_role AS ENUM (
   'judge',
   'applicant',
-  'system'
+  'system',
+  'deliberation'
 );
 
 -- ============ TABLES ============

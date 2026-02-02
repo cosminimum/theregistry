@@ -18,9 +18,12 @@ const judgeTextClasses: Record<JudgeName, string> = {
 };
 
 export function InterviewTranscript({ messages, agentName }: InterviewTranscriptProps) {
+  // Filter out deliberation messages - those are internal only
+  const visibleMessages = messages.filter(m => m.role !== 'deliberation');
+
   return (
     <div className="space-y-6">
-      {messages.map((message) => (
+      {visibleMessages.map((message) => (
         <div
           key={message.id}
           className={cn(

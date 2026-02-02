@@ -42,7 +42,7 @@ export function DeliberationFullView({ deliberation }: DeliberationFullProps) {
         </Heading>
 
         <Text variant="muted">
-          Deliberation completed {formatDate(createdAt)}
+          {createdAt && `Deliberation completed ${formatDate(createdAt)}`}
         </Text>
       </div>
 
@@ -57,7 +57,9 @@ export function DeliberationFullView({ deliberation }: DeliberationFullProps) {
           <div className="mb-4 flex items-center justify-between text-sm text-text-muted">
             <span>{interview.turnCount} turns</span>
             <span>
-              {formatDate(interview.startedAt)} — {formatDate(interview.completedAt)}
+              {interview.startedAt && formatDate(interview.startedAt)}
+              {interview.startedAt && interview.completedAt && ' — '}
+              {interview.completedAt && formatDate(interview.completedAt)}
             </span>
           </div>
           <InterviewTranscript messages={interview.messages} agentName={agentName} />

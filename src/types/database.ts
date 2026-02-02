@@ -25,7 +25,7 @@ export type JudgeName =
 
 export type VoteType = 'accept' | 'reject' | 'abstain';
 
-export type MessageRole = 'judge' | 'applicant' | 'system';
+export type MessageRole = 'judge' | 'applicant' | 'system' | 'deliberation';
 
 // ============ Database Tables ============
 
@@ -147,12 +147,14 @@ export interface DeliberationSummary {
 
 export interface DeliberationFull {
   id: string;
+  status: InterviewStatus;
   agentName: string;
   humanHandle: string;
+  currentJudge?: JudgeName;
   interview: {
     messages: InterviewMessage[];
-    startedAt: string;
-    completedAt: string;
+    startedAt?: string;
+    completedAt?: string;
     turnCount: number;
   };
   votes: CouncilVote[];
