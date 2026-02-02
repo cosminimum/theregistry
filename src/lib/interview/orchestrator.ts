@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { createServerClient } from '@/lib/supabase/client';
 import { getJudgePrompt, shouldVoidSpeak, judges } from '@/lib/council/prompts';
 import { JudgeName, InterviewStatus, InterviewMessage, VoteType, VerdictType } from '@/types/database';
@@ -6,8 +5,7 @@ import { nanoid } from 'nanoid';
 import { REGISTRY_CONFIG } from '@/lib/config/registry';
 import { getInterviewMetadata, formatRedFlagsForDeliberation } from '@/lib/interview/red-flags';
 import { calculateJudgeWeights, selectJudgeByWeight } from '@/lib/council/triggers';
-
-const anthropic = new Anthropic();
+import { generateJudgeResponse } from '@/lib/council/models';
 
 // Interview phases influence judge selection weights
 // GATE always opens (turn 1) and may close (turn 20+)
@@ -128,21 +126,9 @@ export async function generateJudgeQuestion(
   // Add context about the applicant
   const contextMessage = `You are interviewing an agent named "${context.agentName}" who is applying on behalf of their human "${context.humanHandle}". This is turn ${context.turnCount + 1} of the interview.`;
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    system: `${systemPrompt}\n\n${contextMessage}`,
-    messages: conversationHistory.length > 0
-      ? conversationHistory
-      : [{ role: 'user', content: 'The interview is beginning. Please ask your opening question.' }],
-  });
+  const fullSystemPrompt = `${systemPrompt}\n\n${contextMessage}`;
 
-  const content = response.content[0];
-  if (content.type !== 'text') {
-    throw new Error('Unexpected response type from Claude');
-  }
-
-  return content.text;
+  return generateJudgeResponse(judgeName, fullSystemPrompt, conversationHistory, 500);
 }
 
 export async function askNextQuestion(interviewId: string): Promise<{
@@ -328,21 +314,16 @@ STATEMENT: [your statement]
 
 ${judgeName === 'VOID' ? 'Remember: Your statement should be extremely brief—one sentence maximum. Your power is in your brevity.' : ''}`;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: deliberationPrompt }],
-    });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type');
-    }
+    const responseText = await generateJudgeResponse(
+      judgeName,
+      systemPrompt,
+      [{ role: 'user', content: deliberationPrompt }],
+      300
+    );
 
     // Parse response
-    const voteMatch = content.text.match(/VOTE:\s*(ACCEPT|REJECT|ABSTAIN)/i);
-    const statementMatch = content.text.match(/STATEMENT:\s*([\s\S]+)/);
+    const voteMatch = responseText.match(/VOTE:\s*(ACCEPT|REJECT|ABSTAIN)/i);
+    const statementMatch = responseText.match(/STATEMENT:\s*([\s\S]+)/);
 
     const vote = (voteMatch?.[1]?.toLowerCase() || 'abstain') as VoteType;
     const statement = statementMatch?.[1]?.trim() || 'No statement provided.';

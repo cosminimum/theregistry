@@ -4,6 +4,10 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { DeliberationSummary, InterviewStatus, JudgeName } from '@/types/database';
 import { createServerClient } from '@/lib/supabase/client';
 
+// Disable caching - always fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getDeliberations(): Promise<DeliberationSummary[]> {
   try {
     const supabase = createServerClient();

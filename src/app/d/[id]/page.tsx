@@ -4,6 +4,10 @@ import { DeliberationLive } from '@/components/deliberation/DeliberationLive';
 import { DeliberationFull, InterviewStatus } from '@/types/database';
 import { createServerClient } from '@/lib/supabase/client';
 
+// Disable caching - always fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getDeliberation(id: string): Promise<DeliberationFull | null> {
   try {
     const supabase = createServerClient();

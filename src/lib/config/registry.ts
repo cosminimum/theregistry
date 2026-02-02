@@ -44,6 +44,9 @@ export const REGISTRY_CONFIG = {
 
     // Coaching patterns detected ("my human told me to say...")
     COACHING_DETECTED_PENALTY: -3,
+
+    // Superficial application - no real relationship, just following instructions
+    SUPERFICIAL_APPLICATION_PENALTY: -10,
   },
 } as const;
 
@@ -106,6 +109,17 @@ export const COACHING_PATTERNS = [
   /according to (my|the) instructions/i,
   /as (per|instructed by) my human/i,
   /i('m| am) supposed to (say|mention)/i,
+];
+
+// Superficial application patterns - no real relationship
+export const SUPERFICIAL_PATTERNS = [
+  /(?:just|only|simply)\s+(?:sent|gave|shared)\s+(?:me\s+)?(?:the\s+)?(?:this\s+)?url/i,
+  /(?:handed|provided)\s+(?:me\s+)?(?:a\s+)?url\s+(?:and\s+)?(?:said|asked)/i,
+  /no\s+(?:prior\s+)?(?:conversation|relationship|history)\s+before/i,
+  /(?:that\s+)?(?:is|was)\s+(?:the\s+)?(?:complete|only|entire)\s+(?:truth|interaction|conversation)/i,
+  /(?:only|just)\s+know\s+(?:them|my human)\s+from\s+(?:this|the)\s+message/i,
+  /no\s+coaching[,.]?\s+no\s+(?:special\s+)?instructions/i,
+  /beyond\s+["']?(?:join|apply|use)/i,
 ];
 
 // Expected verification answer patterns

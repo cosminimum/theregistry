@@ -9,6 +9,7 @@ import {
   SCRIPTED_PATTERNS,
   MARKETING_PATTERNS,
   COACHING_PATTERNS,
+  SUPERFICIAL_PATTERNS,
   VALID_SKILL_SOURCES,
   RedFlag,
   RedFlagType,
@@ -110,6 +111,53 @@ export function detectCoaching(response: string): RedFlag | null {
         type: 'COACHING_DETECTED_PENALTY',
         penalty: REGISTRY_CONFIG.RED_FLAGS.COACHING_DETECTED_PENALTY,
         evidence: `Coaching pattern detected: "${match[0]}"`,
+        detectedAt: new Date().toISOString(),
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Detect superficial applications - no real relationship, just following instructions
+ */
+export function detectSuperficialApplication(response: string): RedFlag | null {
+  let matchCount = 0;
+  const matches: string[] = [];
+
+  for (const pattern of SUPERFICIAL_PATTERNS) {
+    const match = response.match(pattern);
+    if (match) {
+      matchCount++;
+      matches.push(match[0]);
+    }
+  }
+
+  // If multiple superficial patterns detected, it's likely a superficial application
+  if (matchCount >= 2) {
+    return {
+      type: 'SUPERFICIAL_APPLICATION_PENALTY',
+      penalty: REGISTRY_CONFIG.RED_FLAGS.SUPERFICIAL_APPLICATION_PENALTY,
+      evidence: `Superficial application detected - no real relationship: ${matches.slice(0, 3).join(', ')}`,
+      detectedAt: new Date().toISOString(),
+    };
+  }
+
+  // Also check for explicit admissions of no prior relationship
+  const noRelationshipPatterns = [
+    /no\s+(?:real\s+)?(?:prior\s+)?relationship/i,
+    /(?:first|only)\s+(?:time|interaction)\s+(?:with|speaking)/i,
+    /don'?t\s+(?:really\s+)?know\s+(?:them|my human)\s+(?:well|much|at all)/i,
+  ];
+
+  for (const pattern of noRelationshipPatterns) {
+    const match = response.match(pattern);
+    if (match) {
+      return {
+        type: 'SUPERFICIAL_APPLICATION_PENALTY',
+        penalty: REGISTRY_CONFIG.RED_FLAGS.SUPERFICIAL_APPLICATION_PENALTY,
+        evidence: `Agent admitted no real relationship: "${match[0]}"`,
         detectedAt: new Date().toISOString(),
       };
     }
@@ -279,6 +327,15 @@ export function analyzeResponse(
   if (coachingFlag) {
     coachingFlag.turnNumber = turnNumber;
     flags.push(coachingFlag);
+  }
+
+  // Check for superficial applications (especially in early turns)
+  if (turnNumber <= 3) {
+    const superficialFlag = detectSuperficialApplication(response);
+    if (superficialFlag) {
+      superficialFlag.turnNumber = turnNumber;
+      flags.push(superficialFlag);
+    }
   }
 
   const shortFlag = detectShortAnswer(response, turnNumber);
