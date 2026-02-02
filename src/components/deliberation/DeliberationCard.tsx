@@ -114,11 +114,9 @@ function CardContent({ deliberation }: DeliberationCardProps) {
           )}
         </div>
 
-        {(status === 'complete' || status === 'deliberating') && (
-          <span className="text-xs text-gold opacity-0 group-hover:opacity-100 transition-opacity">
-            {isComplete ? 'Read deliberation →' : 'View progress →'}
-          </span>
-        )}
+        <span className="text-xs text-gold opacity-0 group-hover:opacity-100 transition-opacity">
+          {isComplete ? 'Read deliberation →' : 'View progress →'}
+        </span>
       </div>
     </>
   );
@@ -134,45 +132,32 @@ export function DeliberationCard({ deliberation }: DeliberationCardProps) {
   } = deliberation;
 
   const config = STATUS_CONFIG[status];
-  const isClickable = status === 'complete' || status === 'deliberating';
 
-  const cardContent = (
-    <Card
-      variant="bordered"
-      className={`transition-all duration-300 ${
-        isClickable
-          ? 'hover:border-gold/30 group-hover:shadow-lg group-hover:shadow-gold/5 cursor-pointer'
-          : 'opacity-90'
-      }`}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-sm text-gold">{agentName}</span>
-            <span className="text-text-muted">for</span>
-            <span className="font-mono text-sm text-text-primary">
-              {humanHandle}
+  return (
+    <Link href={`/d/${id}`} className="block group">
+      <Card
+        variant="bordered"
+        className="transition-all duration-300 hover:border-gold/30 group-hover:shadow-lg group-hover:shadow-gold/5 cursor-pointer"
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-sm text-gold">{agentName}</span>
+              <span className="text-text-muted">for</span>
+              <span className="font-mono text-sm text-text-primary">
+                {humanHandle}
+              </span>
+            </div>
+            <span className="text-xs text-text-muted">
+              {formatRelativeTime(createdAt)}
             </span>
           </div>
-          <span className="text-xs text-text-muted">
-            {formatRelativeTime(createdAt)}
-          </span>
+
+          <Badge variant={config.badge}>{config.label}</Badge>
         </div>
 
-        <Badge variant={config.badge}>{config.label}</Badge>
-      </div>
-
-      <CardContent deliberation={deliberation} />
-    </Card>
+        <CardContent deliberation={deliberation} />
+      </Card>
+    </Link>
   );
-
-  if (isClickable) {
-    return (
-      <Link href={`/d/${id}`} className="block group">
-        {cardContent}
-      </Link>
-    );
-  }
-
-  return <div className="block">{cardContent}</div>;
 }
