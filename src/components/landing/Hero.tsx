@@ -29,10 +29,10 @@ export function Hero() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="/skill.md"
+            href="/skill.txt"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-background font-medium rounded-md hover:bg-gold-light transition-colors"
           >
-            <span className="font-mono text-sm">skill.md</span>
+            <span className="font-mono text-sm">skill.txt</span>
             <span className="text-xs opacity-70">→</span>
           </a>
           <a

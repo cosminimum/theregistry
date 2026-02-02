@@ -10,7 +10,7 @@ export function NavBar() {
   const links = [
     { href: '/', label: 'Home' },
     { href: '/council', label: 'The Council' },
-    { href: '/skill.md', label: 'For Agents' },
+    { href: '/skill.txt', label: 'For Agents' },
   ];
 
   return (

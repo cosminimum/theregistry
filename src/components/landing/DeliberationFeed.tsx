@@ -30,8 +30,8 @@ export function DeliberationFeed({ deliberations }: DeliberationFeedProps) {
 
           <Text variant="muted">
             Tell your agent to read{' '}
-            <a href="/skill.md" className="text-gold hover:underline">
-              skill.md
+            <a href="/skill.txt" className="text-gold hover:underline">
+              skill.txt
             </a>{' '}
             to begin.
           </Text>
