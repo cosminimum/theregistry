@@ -1,20 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/client';
-import { askNextQuestion } from '@/lib/interview/orchestrator';
+import { askNextQuestion, generateDeliberation, finalizeVerdict } from '@/lib/interview/orchestrator';
 import { REGISTRY_CONFIG } from '@/lib/config/registry';
 
 /**
- * Cron endpoint for periodic Council activity
+ * Cron endpoint for the full Council lifecycle
  *
- * This endpoint should be called every CRON_INTERVAL_MINUTES (15 min default)
- * by Vercel Cron or an external cron service.
- *
- * For each active interview without a pending question:
- * - Roll the dice (QUESTION_TRIGGER_CHANCE = 25%)
- * - If successful, ask the next question
- *
- * This creates organic interview pacing - questions don't come
- * immediately after responses, and timing feels natural.
+ * Handles three phases:
+ * 1. Interview: Ask questions to pending/in_progress interviews
+ * 2. Deliberation: Generate council votes for deliberating interviews
+ * 3. Verdict: Finalize verdict once all votes are in
  */
 export async function GET(request: Request) {
   // Verify cron secret to prevent unauthorized triggers
@@ -31,15 +26,17 @@ export async function GET(request: Request) {
   try {
     const supabase = createServerClient();
 
-    // Get all active interviews (pending or in_progress status)
+    const results: Array<{
+      interviewId: string;
+      phase: string;
+      triggered: boolean;
+      detail?: string;
+    }> = [];
+
+    // --- Phase 1: Interview questions for pending/in_progress ---
     const { data: activeInterviews, error: fetchError } = await supabase
       .from('interviews')
-      .select(`
-        id,
-        status,
-        turn_count,
-        current_judge
-      `)
+      .select(`id, status, turn_count, current_judge`)
       .in('status', ['pending', 'in_progress']);
 
     if (fetchError) {
@@ -50,72 +47,98 @@ export async function GET(request: Request) {
       );
     }
 
-    if (!activeInterviews || activeInterviews.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: 'No active interviews',
-        triggered: 0,
-      });
-    }
-
-    const results: Array<{
-      interviewId: string;
-      triggered: boolean;
-      judge?: string;
-      reason?: string;
-    }> = [];
-
-    for (const interview of activeInterviews) {
-      // Check if there's already a pending question (last message is from a judge)
+    for (const interview of (activeInterviews || [])) {
+      // Check if there's already a pending question
       const { data: lastMessage } = await supabase
         .from('interview_messages')
         .select('role')
         .eq('interview_id', interview.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .maybeSingle(); // Use maybeSingle() since pending interviews have no messages
+        .maybeSingle();
 
-      // Skip if there's a pending question (applicant hasn't responded yet)
-      // But allow if no messages exist (pending interview needs first question)
       if (lastMessage?.role === 'judge') {
         results.push({
           interviewId: interview.id,
+          phase: 'interview',
           triggered: false,
-          reason: 'Question already pending',
+          detail: 'Question already pending',
         });
         continue;
       }
 
-      // GATE always asks the first question (100% chance for pending interviews)
-      // After that, 25% chance per cron tick for other judges
       const isFirstQuestion = interview.status === 'pending' || interview.turn_count === 0;
       const triggerChance = isFirstQuestion ? 1.0 : REGISTRY_CONFIG.QUESTION_TRIGGER_CHANCE;
 
-      const roll = Math.random();
-      if (roll > triggerChance) {
+      if (Math.random() > triggerChance) {
         results.push({
           interviewId: interview.id,
+          phase: 'interview',
           triggered: false,
-          reason: `Roll failed (${(roll * 100).toFixed(1)}% > ${triggerChance * 100}%)`,
+          detail: 'Roll failed',
         });
         continue;
       }
 
-      // Trigger the next question
       const questionResult = await askNextQuestion(interview.id);
+      results.push({
+        interviewId: interview.id,
+        phase: 'interview',
+        triggered: questionResult.success,
+        detail: questionResult.judge || questionResult.error,
+      });
+    }
 
-      if (questionResult.success) {
+    // --- Phase 2: Deliberation for interviews that need it ---
+    const { data: deliberatingInterviews } = await supabase
+      .from('interviews')
+      .select('id')
+      .eq('status', 'deliberating');
+
+    for (const interview of (deliberatingInterviews || [])) {
+      // Check if votes already exist
+      const { count } = await supabase
+        .from('council_votes')
+        .select('*', { count: 'exact', head: true })
+        .eq('interview_id', interview.id);
+
+      if (count && count >= 7) {
+        // Votes exist, finalize verdict
+        const verdictResult = await finalizeVerdict(interview.id);
         results.push({
           interviewId: interview.id,
-          triggered: true,
-          judge: questionResult.judge,
+          phase: 'verdict',
+          triggered: verdictResult.success,
+          detail: verdictResult.verdict || verdictResult.error,
+        });
+      } else if (count && count > 0) {
+        // Partial votes — something went wrong, skip
+        results.push({
+          interviewId: interview.id,
+          phase: 'deliberation',
+          triggered: false,
+          detail: `Partial votes (${count}/7), skipping`,
         });
       } else {
-        results.push({
-          interviewId: interview.id,
-          triggered: false,
-          reason: questionResult.error || 'Unknown error',
-        });
+        // No votes yet, generate deliberation
+        const delibResult = await generateDeliberation(interview.id);
+        if (delibResult.success) {
+          // Immediately finalize after successful deliberation
+          const verdictResult = await finalizeVerdict(interview.id);
+          results.push({
+            interviewId: interview.id,
+            phase: 'deliberation+verdict',
+            triggered: verdictResult.success,
+            detail: verdictResult.verdict || verdictResult.error,
+          });
+        } else {
+          results.push({
+            interviewId: interview.id,
+            phase: 'deliberation',
+            triggered: false,
+            detail: delibResult.error,
+          });
+        }
       }
     }
 
@@ -123,7 +146,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Processed ${activeInterviews.length} active interviews`,
+      message: `Processed ${(activeInterviews || []).length} active + ${(deliberatingInterviews || []).length} deliberating interviews`,
       triggered: triggeredCount,
       results,
     });

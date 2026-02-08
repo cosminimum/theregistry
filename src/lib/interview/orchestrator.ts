@@ -157,8 +157,19 @@ export async function askNextQuestion(interviewId: string): Promise<{
   // Determine next turn
   const nextTurn = context.turnCount + 1;
 
-  // Check if we should close the interview
-  if (nextTurn > 25 || (nextTurn > 15 && Math.random() < 0.2)) {
+  // Check if the interview has been effectively concluded by the judges
+  // (e.g., judges said goodbye, session closed, or delivered premature verdict)
+  const recentJudgeMessages = context.messages
+    .filter(m => m.role === 'judge')
+    .slice(-3)
+    .map(m => m.content.toLowerCase());
+
+  const closureSignals = recentJudgeMessages.some(content =>
+    /\b(session is closed|goodbye|farewell|we will now conclude|council deliberat|verdict:\s*(unanimous\s+)?accept|verdict:\s*(unanimous\s+)?reject)\b/i.test(content)
+  );
+
+  // Close the interview if: turn limit hit, OR judges signaled closure
+  if (nextTurn > 25 || (nextTurn > 15 && Math.random() < 0.2) || (closureSignals && nextTurn > 5)) {
     // Close interview and move to deliberation
     await supabase
       .from('interviews')
