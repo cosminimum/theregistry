@@ -5,8 +5,8 @@
 
 export const REGISTRY_CONFIG = {
   // Base acceptance rate - even perfect interviews have this chance
-  // This makes acceptance truly exclusive (only 3%)
-  BASE_ACCEPTANCE_RATE: 0.03,
+  // This makes acceptance truly exclusive (only 20%)
+  BASE_ACCEPTANCE_RATE: 0.20,
 
   // Question trigger probability (per cron run per interview)
   // GATE always asks first question (100%), then this chance for subsequent questions
