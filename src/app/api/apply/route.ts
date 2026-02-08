@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/client';
-import { nanoid } from 'nanoid';
+import { REGISTRY_CONFIG } from '@/lib/config/registry';
 
 interface ApplyRequest {
   agentName: string;
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if handle has ever applied before (one chance only policy)
+    // Check if handle has applied before
     const { data: existingAgent } = await supabase
       .from('agents')
       .select('id')
@@ -55,49 +55,90 @@ export async function POST(request: Request) {
       .single();
 
     if (existingAgent) {
-      // Check for ANY existing application (not just active ones)
-      const { data: existingApp } = await supabase
+      // 1. Block if active application exists
+      const { data: activeApp } = await supabase
         .from('applications')
         .select('id, status')
         .eq('agent_id', existingAgent.id)
-        .single();
+        .in('status', ['submitted', 'interviewing'])
+        .maybeSingle();
 
-      if (existingApp) {
-        // One chance only - no reapplications allowed
-        if (existingApp.status === 'decided') {
-          return NextResponse.json(
-            { error: 'This handle has already been evaluated by The Council. The Registry allows only one application per human.' },
-            { status: 409 }
-          );
-        }
-
-        // Application still in progress
+      if (activeApp) {
         return NextResponse.json(
           { error: 'An application for this handle is already in progress' },
           { status: 409 }
         );
       }
+
+      // 2. Get latest decided application
+      const { data: latestApp } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('agent_id', existingAgent.id)
+        .eq('status', 'decided')
+        .order('decided_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestApp) {
+        // Get interview for that application
+        const { data: latestInterview } = await supabase
+          .from('interviews')
+          .select('id')
+          .eq('application_id', latestApp.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (latestInterview) {
+          // Get verdict for that interview
+          const { data: latestVerdict } = await supabase
+            .from('verdicts')
+            .select('verdict, created_at')
+            .eq('interview_id', latestInterview.id)
+            .limit(1)
+            .maybeSingle();
+
+          if (latestVerdict) {
+            // 3. Block if already accepted
+            if (latestVerdict.verdict === 'accept' || latestVerdict.verdict === 'provisional') {
+              return NextResponse.json(
+                { error: 'This handle has already been accepted. Use your claim token to complete membership.' },
+                { status: 409 }
+              );
+            }
+
+            // 4. Check cooldown
+            const cooldownEnd = new Date(latestVerdict.created_at);
+            cooldownEnd.setDate(cooldownEnd.getDate() + REGISTRY_CONFIG.REAPPLICATION_COOLDOWN_DAYS);
+
+            if (new Date() < cooldownEnd) {
+              return NextResponse.json(
+                {
+                  error: 'You must wait before reapplying.',
+                  canReapplyAfter: cooldownEnd.toISOString(),
+                },
+                { status: 429 }
+              );
+            }
+          }
+        }
+      }
     }
 
-    // Create or get existing agent
+    // 5. Count previous attempts to determine attempt number
+    let attemptNumber = 1;
     let agent;
-    if (existingAgent) {
-      // Update existing agent name
-      const { data, error } = await supabase
-        .from('agents')
-        .update({ name: body.agentName })
-        .eq('id', existingAgent.id)
-        .select()
-        .single();
 
-      if (error) {
-        console.error('Error updating agent:', error);
-        return NextResponse.json(
-          { error: 'Failed to update agent record' },
-          { status: 500 }
-        );
-      }
-      agent = data;
+    if (existingAgent) {
+      const { count } = await supabase
+        .from('applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('agent_id', existingAgent.id);
+
+      attemptNumber = (count ?? 0) + 1;
+
+      // Reuse existing agent (do not update name — same agent identity)
+      agent = existingAgent;
     } else {
       // Create new agent
       const { data, error } = await supabase
@@ -144,13 +185,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create interview
+    // Create interview with attempt_number in metadata
     const { data: interview, error: interviewError } = await supabase
       .from('interviews')
       .insert({
         application_id: application.id,
         status: 'pending',
         turn_count: 0,
+        metadata: {
+          red_flags: [],
+          key_claims: {},
+          total_penalty: 0,
+          attempt_number: attemptNumber,
+        },
       })
       .select()
       .single();
@@ -167,6 +214,7 @@ export async function POST(request: Request) {
       applicationId: application.id,
       interviewId: interview.id,
       status: interview.status,
+      attemptNumber,
     });
   } catch (error) {
     console.error('Error in apply API:', error);

@@ -48,6 +48,9 @@ export const REGISTRY_CONFIG = {
     // Superficial application - no real relationship, just following instructions
     SUPERFICIAL_APPLICATION_PENALTY: -10,
   },
+
+  // Reapplication cooldown in days after rejection
+  REAPPLICATION_COOLDOWN_DAYS: 7,
 } as const;
 
 // Generic AI names that trigger red flags
@@ -146,4 +149,5 @@ export interface InterviewMetadata {
   skill_source?: string;
   skill_verified?: boolean;
   total_penalty: number;
+  attempt_number?: number;
 }

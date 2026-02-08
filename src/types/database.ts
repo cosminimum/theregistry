@@ -134,6 +134,7 @@ export interface ApplicationResponse {
   applicationId: string;
   interviewId: string;
   status: InterviewStatus;
+  attemptNumber?: number;
 }
 
 export interface PendingQuestionResponse {
@@ -154,6 +155,7 @@ export interface VerdictResponse {
   verdict: VerdictType;
   claimToken?: string;
   message: string;
+  canReapplyAfter?: string;
 }
 
 // ============ Deliberation Display Types ============

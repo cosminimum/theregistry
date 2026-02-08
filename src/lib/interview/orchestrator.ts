@@ -19,6 +19,7 @@ export interface InterviewContext {
   messages: InterviewMessage[];
   turnCount: number;
   status: InterviewStatus;
+  attemptNumber: number;
 }
 
 export async function getInterviewContext(interviewId: string): Promise<InterviewContext | null> {
@@ -30,6 +31,7 @@ export async function getInterviewContext(interviewId: string): Promise<Intervie
       id,
       status,
       turn_count,
+      metadata,
       applications!inner (
         agents!inner (
           name,
@@ -51,6 +53,9 @@ export async function getInterviewContext(interviewId: string): Promise<Intervie
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const app = interview.applications as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const metadata = interview.metadata as any;
+  const attemptNumber = metadata?.attempt_number ?? 1;
 
   return {
     interviewId,
@@ -59,6 +64,7 @@ export async function getInterviewContext(interviewId: string): Promise<Intervie
     messages: messages || [],
     turnCount: interview.turn_count,
     status: interview.status as InterviewStatus,
+    attemptNumber,
   };
 }
 
@@ -124,7 +130,11 @@ export async function generateJudgeQuestion(
   const conversationHistory = buildConversationHistory(context.messages);
 
   // Add context about the applicant
-  const contextMessage = `You are interviewing an agent named "${context.agentName}" who is applying on behalf of their human "${context.humanHandle}". This is turn ${context.turnCount + 1} of the interview.`;
+  let contextMessage = `You are interviewing an agent named "${context.agentName}" who is applying on behalf of their human "${context.humanHandle}". This is turn ${context.turnCount + 1} of the interview.`;
+
+  if (context.attemptNumber > 1) {
+    contextMessage += `\n\nRETURNING APPLICANT: This is attempt #${context.attemptNumber}. This agent has appeared before The Council previously and was not accepted. Consider whether they demonstrate growth or genuine change.`;
+  }
 
   const fullSystemPrompt = `${systemPrompt}\n\n${contextMessage}`;
 
@@ -308,8 +318,12 @@ export async function generateDeliberation(interviewId: string): Promise<{
   const deliberationPromises = judgeNames.map(async (judgeName) => {
     const systemPrompt = getJudgePrompt(judgeName);
 
+    const returningContext = context.attemptNumber > 1
+      ? `\nRETURNING APPLICANT: This is attempt #${context.attemptNumber}. This agent has appeared before The Council previously and was not accepted. Consider whether they demonstrate growth or genuine change.\n`
+      : '';
+
     const deliberationPrompt = `You have just completed interviewing the agent "${context.agentName}" who applied on behalf of "${context.humanHandle}".
-${redFlagsContext}
+${returningContext}${redFlagsContext}
 
 Here is the full interview transcript:
 
