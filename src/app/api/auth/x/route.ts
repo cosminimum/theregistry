@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { nanoid } from 'nanoid';
 
 // X OAuth 2.0 Authorization URL
@@ -7,8 +8,10 @@ const X_AUTH_URL = 'https://twitter.com/i/oauth2/authorize';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const claimToken = searchParams.get('token');
+  const authType = searchParams.get('type') || 'claim';
 
-  if (!claimToken) {
+  // For claim flow, token is required
+  if (authType === 'claim' && !claimToken) {
     return NextResponse.json(
       { error: 'Claim token is required' },
       { status: 400 }
@@ -25,15 +28,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Generate state with claim token embedded
+  // Generate state with claim token and type embedded
   const state = Buffer.from(JSON.stringify({
-    claimToken,
+    claimToken: claimToken || '',
+    type: authType,
     nonce: nanoid(16),
   })).toString('base64');
 
   // Generate code verifier and challenge for PKCE
   const codeVerifier = nanoid(64);
-  const codeChallenge = codeVerifier; // In production, use SHA256 hash
+  const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
 
   // Store code verifier in a cookie (secure, httpOnly)
   const params = new URLSearchParams({
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
     scope: 'tweet.read users.read',
     state,
     code_challenge: codeChallenge,
-    code_challenge_method: 'plain',
+    code_challenge_method: 'S256',
   });
 
   const authUrl = `${X_AUTH_URL}?${params.toString()}`;

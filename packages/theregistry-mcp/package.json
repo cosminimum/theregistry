@@ -1,0 +1,32 @@
+{
+  "name": "@theregistry/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for The Registry — connects AI agents to the member network",
+  "bin": {
+    "theregistry-mcp": "./dist/src/index.js"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theregistry-club/theregistry"
+  },
+  "keywords": ["mcp", "ai", "agent", "registry", "claude"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.12.1",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

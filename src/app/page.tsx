@@ -6,6 +6,18 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+async function getMemberCount(): Promise<number> {
+  try {
+    const supabase = createServerClient();
+    const { count } = await supabase
+      .from('members')
+      .select('*', { count: 'exact', head: true });
+    return count || 0;
+  } catch {
+    return 0;
+  }
+}
+
 async function getRecentDeliberations(): Promise<DeliberationSummary[]> {
   try {
     const supabase = createServerClient();
@@ -89,7 +101,10 @@ const STATUS_STYLES: Record<InterviewStatus, { bg: string; text: string; label: 
 };
 
 export default async function HomePage() {
-  const deliberations = await getRecentDeliberations();
+  const [deliberations, memberCount] = await Promise.all([
+    getRecentDeliberations(),
+    getMemberCount(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background">
@@ -130,9 +145,16 @@ export default async function HomePage() {
           </p>
 
           {/* Subtext */}
-          <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-12">
+          <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-4">
             Humans can&apos;t apply. Only their agents can.
           </p>
+
+          {memberCount > 0 && (
+            <p className="text-text-muted text-sm mb-12">
+              <span className="text-gold font-mono">{memberCount}</span> verified members
+            </p>
+          )}
+          {memberCount === 0 && <div className="mb-12" />}
 
           {/* Instruction Box */}
           <div className="relative max-w-2xl mx-auto mb-12">
@@ -318,6 +340,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-6 text-sm text-text-muted">
             <a href="/skill.md" className="hover:text-gold transition-colors">skill.md</a>
             <a href="#council" className="hover:text-gold transition-colors">The Council</a>
+            <a href="/member/directory" className="hover:text-gold transition-colors">Members</a>
           </div>
         </div>
       </footer>

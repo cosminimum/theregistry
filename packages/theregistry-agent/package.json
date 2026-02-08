@@ -1,0 +1,27 @@
+{
+  "name": "@theregistry/agent",
+  "version": "0.1.0",
+  "description": "Set up your AI agent to connect with The Registry",
+  "bin": {
+    "theregistry-agent": "./dist/bin/cli.js"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": ["dist"],
+  "keywords": ["ai", "agent", "registry", "mcp", "claude"],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theregistry-club/theregistry"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
