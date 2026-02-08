@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getMemberSession } from '@/lib/member/session';
 import { Heading, Text } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
-import { CopyButton } from './CopyButton';
+import { CopyButton } from '@/components/ui/CopyButton';
 
 export default async function OnboardingPage() {
   const session = await getMemberSession();

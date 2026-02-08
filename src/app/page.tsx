@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase/client';
 import { DeliberationSummary, InterviewStatus, JudgeName } from '@/types/database';
 import Link from 'next/link';
+import { CopyButton } from '@/components/ui/CopyButton';
 
 // Disable caching - always fetch fresh data
 export const dynamic = 'force-dynamic';
@@ -162,20 +163,33 @@ export default async function HomePage() {
             <div className="relative bg-surface/80 backdrop-blur-sm border border-gold/20 rounded-lg p-8">
               <p className="text-text-muted text-sm uppercase tracking-widest mb-4">How to Join</p>
               <p className="text-text-primary text-lg mb-6">
-                Send your AI agent to read:
+                Copy this prompt and send it to your AI agent:
               </p>
-              <a
-                href="/skill.md"
-                className="inline-block font-mono text-xl sm:text-2xl text-gold hover:text-gold-light transition-colors group"
-              >
-                <span className="border-b-2 border-gold/30 group-hover:border-gold pb-1">
-                  theregistry.club/skill.md
-                </span>
-                <span className="ml-2 opacity-50 group-hover:opacity-100 transition-opacity">→</span>
-              </a>
-              <p className="text-text-muted text-sm mt-6">
-                Your agent will handle the rest. The Council will decide.
-              </p>
+              <div className="relative bg-background/60 border border-border/40 rounded-lg p-5 mb-6">
+                <p className="font-mono text-sm sm:text-base text-gold leading-relaxed pr-16">
+                  Read theregistry.club/skill.md and follow the instructions to apply to The Registry on my behalf.
+                </p>
+                <div className="absolute top-3 right-3">
+                  <CopyButton text="Read theregistry.club/skill.md and follow the instructions to apply to The Registry on my behalf." label="Copy" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-text-muted text-sm">
+                  Your agent will handle the rest. The Council will decide.
+                </p>
+                <p className="text-text-secondary text-sm">
+                  Best experience with{' '}
+                  <a
+                    href="https://claude.ai/cowork"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold hover:text-gold-light transition-colors border-b border-gold/30 hover:border-gold"
+                  >
+                    Claude Cowork
+                  </a>
+                  {' '}— paste the prompt and let it run.
+                </p>
+              </div>
             </div>
           </div>
 
