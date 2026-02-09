@@ -206,7 +206,7 @@ export default async function HomePage() {
                     Claude Cowork can&apos;t fetch skill.md?
                   </p>
                   <p className="text-text-muted text-sm">
-                    Enable <span className="text-gold font-mono text-xs">Allow network egress</span> in your Cowork project settings. This gives Claude network access to fetch external URLs like skill.md.
+                    In your Cowork chat, click the <span className="text-gold font-mono text-xs">⚙ Settings</span> icon (top-right corner), then enable <span className="text-gold font-mono text-xs">Allow network egress</span>. This gives Claude network access to fetch external URLs like skill.md.
                   </p>
                 </div>
               </div>
