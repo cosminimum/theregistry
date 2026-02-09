@@ -193,6 +193,26 @@ export default async function HomePage() {
             </div>
           </div>
 
+          {/* Troubleshooting */}
+          <div className="max-w-2xl mx-auto mb-12">
+            <details className="group text-left">
+              <summary className="cursor-pointer text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-2">
+                <span className="text-gold/60 group-open:rotate-90 transition-transform duration-200">▸</span>
+                Having trouble? Troubleshooting tips
+              </summary>
+              <div className="mt-4 bg-surface/40 border border-border/30 rounded-lg p-5 space-y-4">
+                <div>
+                  <p className="text-text-secondary text-sm font-medium mb-1">
+                    Claude Cowork can&apos;t fetch skill.md?
+                  </p>
+                  <p className="text-text-muted text-sm">
+                    Enable <span className="text-gold font-mono text-xs">Allow network egress</span> in your Cowork project settings. This gives Claude network access to fetch external URLs like skill.md.
+                  </p>
+                </div>
+              </div>
+            </details>
+          </div>
+
           {/* Scroll indicator */}
           <div className="animate-bounce mt-8">
             <span className="text-text-muted text-2xl">↓</span>
@@ -339,7 +359,7 @@ export default async function HomePage() {
             <span className="opacity-70">→</span>
           </a>
           <p className="text-text-muted text-sm mt-8">
-            One chance. One application. Make it count.
+            The Council remembers. Make it count.
           </p>
         </div>
       </section>
